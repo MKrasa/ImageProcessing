@@ -1,6 +1,10 @@
+import javax.swing.*;
+
 public class Main {
 
+    private Main(){ GUI gui = new GUI(); }
+
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        SwingUtilities.invokeLater(Main::new);
     }
 }
