@@ -1,3 +1,5 @@
+import sun.misc.JavaLangAccess;
+
 import javax.swing.*;
 
 import java.awt.*;
@@ -10,6 +12,8 @@ import java.io.File;
 public class GUI {
 
     private JFrame frame;
+    private java.util.List<JTextField> textFields;
+    private java.util.List<JLabel> labels;
     private JPanel panel;
 
     private JFileChooser chooser;
@@ -21,18 +25,22 @@ public class GUI {
     GUI(){
         frame = new JFrame("Image processor");
 
-        frame.add(this.buttonMaker(), BorderLayout.CENTER);
-        frame.add(this.labelMaker(), BorderLayout.CENTER);
-
+        frame.setBackground(Color.white);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 500);
+        frame.setSize(800, 200);
+
+        frame.add(this.infoPanelMaker(0, 0), BorderLayout.SOUTH);
+        frame.add(this.labelMaker(), BorderLayout.PAGE_START);
         frame.setVisible(true);
 
         chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-
     }
+
+    //ilość zdjęć na 1 forka
+    //ilość zdjęć w folderze?
+    //czas przetwarzania
 
     private void panelMaker(){
         panel = new JPanel();
@@ -60,20 +68,29 @@ public class GUI {
         scrollPane = new JScrollPane(panel);
     }
 
-    private JPanel buttonMaker(){
+    private JPanel infoPanelMaker(int photoPerFork, int processingTime){
         JPanel panel = new JPanel();
+        JLabel label = new JLabel("Liczba zdjęc na forka: ");
+        JLabel photoPerForkLabel = new JLabel(Integer.toString(photoPerFork));
+        JLabel label1 = new JLabel("Czas przetwarzania: ");
+        JLabel processingTimeLabel = new JLabel(Integer.toString(processingTime));
+
+        panel.add(label);
+        panel.add(photoPerForkLabel);
+        panel.add(label1);
+        panel.add(processingTimeLabel);
         return panel;
     }
 
     private JPanel labelMaker(){
+
         JPanel panel = new JPanel();
         chosenFileLabel = new JLabel("...");
-        chosenFileLabel.setBounds(50, 50, 20, 100);
+//        chosenFileLabel.setBounds(50, 50, 20, 200);
         panel.add(chosenFileLabel);
 
-
         JButton chooseFolderButton = new JButton("Wybierz folder");
-        chooseFolderButton.setBounds(100, 100, 30, 30);
+//        chooseFolderButton.setBounds(100, 100, 30, 60);
         chooseFolderButton.addActionListener(new StartListener());
         panel.add(chooseFolderButton);
         return panel;
@@ -86,8 +103,8 @@ public class GUI {
 
             try {
                 chooser.showOpenDialog(frame);
-                imageDirectory = chooser.getCurrentDirectory();
-                chosenFileLabel.setText("      Wybrany folder: " + imageDirectory.getName());
+                imageDirectory = chooser.getSelectedFile();
+                chosenFileLabel.setText("      Wybrany folder: " + imageDirectory.getPath());
             } catch (NullPointerException ex){
                 JOptionPane.showMessageDialog(frame, "Nie wybrano folderu ze zdjęciami!", "Wybierz folder", JOptionPane.WARNING_MESSAGE);
             }
