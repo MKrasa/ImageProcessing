@@ -1,5 +1,3 @@
-import sun.misc.JavaLangAccess;
-
 import javax.swing.*;
 
 import java.awt.*;
@@ -7,6 +5,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class GUI {
@@ -21,6 +28,7 @@ public class GUI {
     private JLabel chosenFileLabel;
     private JScrollPane scrollPane;
     private JTextArea textArea;
+    private JSpinner forkNumberChooser;
 
     GUI(){
         frame = new JFrame("Image processor");
@@ -30,7 +38,7 @@ public class GUI {
         frame.setSize(800, 200);
 
         frame.add(this.infoPanelMaker(0, 0), BorderLayout.SOUTH);
-        frame.add(this.labelMaker(), BorderLayout.PAGE_START);
+        frame.add(this.labelMaker(), BorderLayout.CENTER);
         frame.setVisible(true);
 
         chooser = new JFileChooser();
@@ -82,21 +90,41 @@ public class GUI {
         return panel;
     }
 
+    String getDirectoryPath(){
+        return imageDirectory.getAbsolutePath();
+    }
+
+    Integer getForksNumber(){
+        int forksNumber = (Integer) forkNumberChooser.getValue();
+        return forksNumber;
+    }
+
     private JPanel labelMaker(){
 
         JPanel panel = new JPanel();
-        chosenFileLabel = new JLabel("...");
-//        chosenFileLabel.setBounds(50, 50, 20, 200);
-        panel.add(chosenFileLabel);
+        panel.setSize(200, 400);
 
-        JButton chooseFolderButton = new JButton("Wybierz folder");
-//        chooseFolderButton.setBounds(100, 100, 30, 60);
-        chooseFolderButton.addActionListener(new StartListener());
+        chosenFileLabel = new JLabel("...");
+        JButton chooseFolderButton = new JButton("Wybierz folder: ");
+        chooseFolderButton.addActionListener(new ChoseDirectoryListener());
+
+        JLabel forkNumberLabel = new JLabel("Wybierz liczbę wątków: ");
+        SpinnerNumberModel forkNumberModel = new SpinnerNumberModel(0, 0, 20, 1);
+        forkNumberChooser = new JSpinner(forkNumberModel);
+
+        JButton startProcessing = new JButton("Start");
+        startProcessing.addActionListener(new StartListener());
+
         panel.add(chooseFolderButton);
+        panel.add(chosenFileLabel);
+        panel.add(forkNumberLabel);
+        panel.add(forkNumberChooser);
+        panel.add(startProcessing);
+
         return panel;
     }
 
-    private class StartListener implements ActionListener{
+    private class ChoseDirectoryListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -108,6 +136,52 @@ public class GUI {
             } catch (NullPointerException ex){
                 JOptionPane.showMessageDialog(frame, "Nie wybrano folderu ze zdjęciami!", "Wybierz folder", JOptionPane.WARNING_MESSAGE);
             }
+
+        }
+    }
+
+    private class StartListener implements ActionListener{
+
+        public List<String> GetDirs(String path) {
+
+            List<String> dirs = new ArrayList<>();
+            try (Stream<Path> walk = Files.walk(Paths.get(path))) {
+                dirs = walk.map(x -> x.toString())
+                        .filter(f -> f.endsWith(".jpg")).collect(Collectors.toList());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            return  dirs;
+        }
+
+        //TODO mierzenie czasu
+        //TODO wyswietlanie czasu
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            try {
+                String path = getDirectoryPath();
+                System.out.println(path);
+
+                Integer count = getForksNumber();
+                System.out.println(count);
+
+                List<String> lDirectories = GetDirs(path);
+
+                ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+                try {
+                    forkJoinPool.invoke(new ForkJoinManager(lDirectories, count));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } catch (NullPointerException exept) {
+                JOptionPane.showMessageDialog(frame, "Nie wybrano folderu ze zdjęciami!", "Wybierz folder", JOptionPane.WARNING_MESSAGE);
+            }
+
+
 
         }
     }
