@@ -163,10 +163,8 @@ public class GUI {
 
             try {
                 String path = getDirectoryPath();
-                System.out.println(path);
 
                 Integer count = getForksNumber();
-                System.out.println(count);
 
                 List<String> lDirectories = GetDirs(path);
 
