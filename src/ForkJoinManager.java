@@ -5,22 +5,23 @@ import java.util.concurrent.RecursiveAction;
 
 public class ForkJoinManager extends RecursiveAction {
 
-    private final List<String>      m_lDirectories;     //lis of directories
-    private final Integer           m_iCount;           //threshold count of image files
+    /* List of directories */
+    private final List<String>      m_lDirectories;
 
-    public ForkJoinManager(List<String> dirs, int count) {
+    /* Threshold count of image files */
+    private final Integer           m_iCount;
+
+    ForkJoinManager(List<String> dirs, int count) {
         this.m_lDirectories = dirs;
         this.m_iCount = count;
     }
 
-    public List[] SplitDirs(List<String> dirs) {
-
+    private List[] SplitDirs(List<String> dirs) {
         int size = dirs.size();
-        List<String> first = new ArrayList();
-        List<String> second = new ArrayList();
+        ArrayList<String> first = new ArrayList<String>();
+        ArrayList<String> second = new ArrayList<String>();
 
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             if (i < (size + 1)/2)
                 first.add(dirs.get(i));
             else
@@ -31,16 +32,14 @@ public class ForkJoinManager extends RecursiveAction {
 
     @Override
     protected void compute() {
-        //lDirectories.forEach(System.out::println);
 
-        if( m_lDirectories.size() < m_iCount ) {
+        if (m_lDirectories.size() < m_iCount) {
             for (String dir: m_lDirectories) {
                 ImageProcessor ImgPrc = new ImageProcessor(dir);
                 ImgPrc.ProcessImage();
                 ImgPrc.WriteImage();
             }
-        }
-        else {
+        } else {
             List[] lHalves = SplitDirs(m_lDirectories);
             ForkJoinManager first = new ForkJoinManager(lHalves[0], m_iCount);
             ForkJoinManager second = new ForkJoinManager(lHalves[1], m_iCount);

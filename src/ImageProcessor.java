@@ -3,41 +3,34 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class ImageProcessor {
-
-    private final String m_sDirectory;
+class ImageProcessor {
     private final BufferedImage m_Image;
     private String m_sWritePath;
     private String m_sFileName;
 
-    public ImageProcessor (String dir)
+    ImageProcessor(String dir)
     {
-        this.m_sDirectory = dir;
-        this.m_Image = GetImage(m_sDirectory);
+        this.m_Image = GetImage(dir);
     }
 
-    public BufferedImage GetImage(String path) {
+    private BufferedImage GetImage(String path) {
         BufferedImage img = null;
-        File f = null;
 
         try {
-            f = new File(path);
+            File f = new File(path);
             img = ImageIO.read(f);
             this.m_sWritePath = f.getParent();
             this.m_sFileName = f.getName().replaceFirst("[.][^.]+$", "");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
         return img;
     }
 
-    public void ProcessImage()
-    {
+    void ProcessImage() {
         if( m_Image != null ) {
-            Integer width = m_Image.getWidth();
-            Integer height = m_Image.getHeight();
+            int width = m_Image.getWidth();
+            int height = m_Image.getHeight();
 
             for(int y = 0; y < height; y++) {
                 for(int x = 0; x < width; x++) {
@@ -59,7 +52,8 @@ public class ImageProcessor {
         }
     }
 
-    public void WriteImage()
+
+    void WriteImage()
     {
         try {
             File f = new File(m_sWritePath + "\\" + m_sFileName + "_gray.jpg");

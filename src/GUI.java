@@ -1,7 +1,5 @@
 import javax.swing.*;
-
 import java.awt.*;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -16,30 +14,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class GUI {
-
+class GUI
+{
     private JFrame frame;
-    private JPanel panel;
-
-    private JFileChooser chooser;
     private File imageDirectory;
-    private JLabel chosenFileLabel;
-    private JScrollPane scrollPane;
-    private JTextArea textArea;
+    private JFileChooser chooser;
     private JSpinner forkNumberChooser;
-
-    private long startTime;
-    private double processingTime;
+    private JLabel chosenFileLabel;
     private JLabel processingTimeLabel;
 
-    GUI(){
+    GUI() {
         frame = new JFrame("Image processor");
 
         frame.setBackground(Color.white);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 200);
 
-        frame.add(this.infoPanelMaker(0, 0), BorderLayout.SOUTH);
+        frame.add(this.infoPanelMaker(), BorderLayout.SOUTH);
         frame.add(this.labelMaker(), BorderLayout.CENTER);
         frame.setVisible(true);
 
@@ -48,52 +39,26 @@ public class GUI {
         chooser.setAcceptAllFileFilterUsed(false);
     }
 
-    private void panelMaker(){
-        panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 2));
 
-        JTextField textField = new JTextField(10);
-        JLabel label = new JLabel("Wybierz folder ze zdjęciami");
-
-        panel.add(textField);
-        panel.add(label);
-
-        if (imageDirectory ==null) {
-            chosenFileLabel = new JLabel("     Wybrany Plik: ...");
-        } else {
-            chosenFileLabel.setText("      Wybrany Plik: " + imageDirectory.getName());
-        }
-    }
-
-    private void textAreaMaker() {
-        JPanel panel = new JPanel();
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-        panel.setLayout(new BorderLayout());
-        panel.add(textArea);
-        scrollPane = new JScrollPane(panel);
-    }
-
-    private JPanel infoPanelMaker(int photoPerFork, int processingTime){
+    private JPanel infoPanelMaker() {
         JPanel panel = new JPanel();
         JLabel label1 = new JLabel("Czas przetwarzania: ");
-        processingTimeLabel = new JLabel(Integer.toString(processingTime));
+        processingTimeLabel = new JLabel(Integer.toString(0));
 
         panel.add(label1);
         panel.add(processingTimeLabel);
         return panel;
     }
 
-    String getDirectoryPath(){
+    private String getDirectoryPath(){
         return imageDirectory.getAbsolutePath();
     }
 
-    Integer getForksNumber(){
-        int forksNumber = (Integer) forkNumberChooser.getValue();
-        return forksNumber;
+    private Integer getForksNumber(){
+        return (int) (Integer) forkNumberChooser.getValue();
     }
 
-    private JPanel labelMaker(){
+    private JPanel labelMaker() {
 
         JPanel panel = new JPanel();
         panel.setSize(200, 400);
@@ -118,11 +83,9 @@ public class GUI {
         return panel;
     }
 
-    private class ChoseDirectoryListener implements ActionListener{
-
+    private class ChoseDirectoryListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
             try {
                 chooser.showOpenDialog(frame);
                 imageDirectory = chooser.getSelectedFile();
@@ -130,20 +93,16 @@ public class GUI {
             } catch (NullPointerException ex){
                 JOptionPane.showMessageDialog(frame, "Nie wybrano folderu ze zdjęciami!", "Wybierz folder", JOptionPane.WARNING_MESSAGE);
             }
-
         }
     }
 
-    private class StartListener implements ActionListener{
-
-        public List<String> GetDirs(String path) {
-
+    private class StartListener implements ActionListener {
+        List<String> GetDirs(String path) {
             List<String> dirs = new ArrayList<>();
             try (Stream<Path> walk = Files.walk(Paths.get(path))) {
-                dirs = walk.map(x -> x.toString())
+                dirs = walk.map(Path::toString)
                         .filter(f -> f.endsWith(".jpg")).collect(Collectors.toList());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             return  dirs;
@@ -151,9 +110,8 @@ public class GUI {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-
             try {
-                startTime = System.nanoTime();
+                long startTime = System.nanoTime();
 
                 String path = getDirectoryPath();
 
@@ -165,7 +123,7 @@ public class GUI {
 
                 try {
                     forkJoinPool.invoke(new ForkJoinManager(lDirectories, count));
-                    processingTime = (System.nanoTime() - startTime)/ (double) 1000000000;
+                    double processingTime = (System.nanoTime() - startTime) / (double) 1000000000;
                     processingTimeLabel.setText(String.valueOf(processingTime));
 
                 } catch (Exception ex) {
