@@ -9,6 +9,5 @@ It is based on Java language and use the fork / join framework.
 * Krzysztof Urban
 * Krasa Maciej
 
-## Swing structure
-
 ## UML Diagram
+![diagram](ClassDiagram.png "uml")
