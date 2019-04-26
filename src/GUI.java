@@ -19,8 +19,6 @@ import java.util.stream.Stream;
 public class GUI {
 
     private JFrame frame;
-    private java.util.List<JTextField> textFields;
-    private java.util.List<JLabel> labels;
     private JPanel panel;
 
     private JFileChooser chooser;
@@ -31,7 +29,7 @@ public class GUI {
     private JSpinner forkNumberChooser;
 
     private long startTime;
-    private long processingTime;
+    private double processingTime;
     private JLabel processingTimeLabel;
 
     GUI(){
@@ -49,10 +47,6 @@ public class GUI {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
     }
-
-    //ilość zdjęć na 1 forka
-    //ilość zdjęć w folderze?
-    //czas przetwarzania
 
     private void panelMaker(){
         panel = new JPanel();
@@ -82,13 +76,9 @@ public class GUI {
 
     private JPanel infoPanelMaker(int photoPerFork, int processingTime){
         JPanel panel = new JPanel();
-        JLabel label = new JLabel("Liczba zdjęc na forka: ");
-        JLabel photoPerForkLabel = new JLabel(Integer.toString(photoPerFork));
         JLabel label1 = new JLabel("Czas przetwarzania: ");
         processingTimeLabel = new JLabel(Integer.toString(processingTime));
 
-        panel.add(label);
-        panel.add(photoPerForkLabel);
         panel.add(label1);
         panel.add(processingTimeLabel);
         return panel;
@@ -112,8 +102,8 @@ public class GUI {
         JButton chooseFolderButton = new JButton("Wybierz folder: ");
         chooseFolderButton.addActionListener(new ChoseDirectoryListener());
 
-        JLabel forkNumberLabel = new JLabel("Wybierz liczbę wątków: ");
-        SpinnerNumberModel forkNumberModel = new SpinnerNumberModel(1, 1, 20, 1);
+        JLabel forkNumberLabel = new JLabel("Wybierz liczbę zdjęć na forka: ");
+        SpinnerNumberModel forkNumberModel = new SpinnerNumberModel(0, 0, 20, 1);
         forkNumberChooser = new JSpinner(forkNumberModel);
 
         JButton startProcessing = new JButton("Start");
@@ -159,9 +149,6 @@ public class GUI {
             return  dirs;
         }
 
-        //TODO mierzenie czasu
-        //TODO wyswietlanie czasu
-
         @Override
         public void actionPerformed(ActionEvent e) {
 
@@ -178,7 +165,7 @@ public class GUI {
 
                 try {
                     forkJoinPool.invoke(new ForkJoinManager(lDirectories, count));
-                    processingTime = (System.nanoTime() - startTime)/1000000000;
+                    processingTime = (System.nanoTime() - startTime)/ (double) 1000000000;
                     processingTimeLabel.setText(String.valueOf(processingTime));
 
                 } catch (Exception ex) {
