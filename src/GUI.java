@@ -30,6 +30,10 @@ public class GUI {
     private JTextArea textArea;
     private JSpinner forkNumberChooser;
 
+    private long startTime;
+    private long processingTime;
+    private JLabel processingTimeLabel;
+
     GUI(){
         frame = new JFrame("Image processor");
 
@@ -81,7 +85,7 @@ public class GUI {
         JLabel label = new JLabel("Liczba zdjęc na forka: ");
         JLabel photoPerForkLabel = new JLabel(Integer.toString(photoPerFork));
         JLabel label1 = new JLabel("Czas przetwarzania: ");
-        JLabel processingTimeLabel = new JLabel(Integer.toString(processingTime));
+        processingTimeLabel = new JLabel(Integer.toString(processingTime));
 
         panel.add(label);
         panel.add(photoPerForkLabel);
@@ -109,7 +113,7 @@ public class GUI {
         chooseFolderButton.addActionListener(new ChoseDirectoryListener());
 
         JLabel forkNumberLabel = new JLabel("Wybierz liczbę wątków: ");
-        SpinnerNumberModel forkNumberModel = new SpinnerNumberModel(0, 0, 20, 1);
+        SpinnerNumberModel forkNumberModel = new SpinnerNumberModel(1, 1, 20, 1);
         forkNumberChooser = new JSpinner(forkNumberModel);
 
         JButton startProcessing = new JButton("Start");
@@ -162,6 +166,8 @@ public class GUI {
         public void actionPerformed(ActionEvent e) {
 
             try {
+                startTime = System.nanoTime();
+
                 String path = getDirectoryPath();
 
                 Integer count = getForksNumber();
@@ -172,9 +178,13 @@ public class GUI {
 
                 try {
                     forkJoinPool.invoke(new ForkJoinManager(lDirectories, count));
+                    processingTime = (System.nanoTime() - startTime)/1000000000;
+                    processingTimeLabel.setText(String.valueOf(processingTime));
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+
             } catch (NullPointerException exept) {
                 JOptionPane.showMessageDialog(frame, "Nie wybrano folderu ze zdjęciami!", "Wybierz folder", JOptionPane.WARNING_MESSAGE);
             }
